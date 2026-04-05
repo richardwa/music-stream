@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { createReadStream, existsSync, statSync } from "fs";
 import { apiPath, type ServerApi } from "../common/interface";
 import { getTracks } from "./resources/music";
 
@@ -30,10 +31,10 @@ export const configureRoutes = (app: ReturnType<typeof express>) => {
 
   app.use(apiPath, routes);
 
-  // Audio streaming endpoint
+  // Audio streaming endpoint with Range support for seeking
   app.get(
     `${apiPath}/stream/{*filePath}`,
-    async (req: any, res: express.Response) => {
+    (req: any, res: express.Response) => {
       const filePath = decodeURIComponent(req.params.filePath);
       const ext = path.extname(filePath).toLowerCase();
       const mimeMap: Record<string, string> = {
@@ -45,14 +46,39 @@ export const configureRoutes = (app: ReturnType<typeof express>) => {
         ".flac": "audio/flac",
         ".wma": "audio/x-ms-wma",
       };
-      res.setHeader("Content-Type", mimeMap[ext] || "audio/mpeg");
-      res.setHeader("Accept-Ranges", "bytes");
 
-      const readStream = require("fs").createReadStream(filePath);
-      readStream.on("error", () => {
-        res.status(404).json({ error: "File not found" });
-      });
-      readStream.pipe(res);
+      if (!existsSync(filePath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      const stat = statSync(filePath);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+      const mimeType = mimeMap[ext] || "audio/mpeg";
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunkSize = end - start + 1;
+
+        res.writeHead(206, {
+          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": chunkSize,
+          "Content-Type": mimeType,
+        });
+
+        createReadStream(filePath, { start, end }).pipe(res);
+      } else {
+        res.writeHead(200, {
+          "Content-Length": fileSize,
+          "Accept-Ranges": "bytes",
+          "Content-Type": mimeType,
+        });
+
+        createReadStream(filePath).pipe(res);
+      }
     },
   );
 };
