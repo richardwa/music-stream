@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A music streaming web app — currently implemented as a git log viewer demo. Built with **Express** (server) + **Vite** (bundler) + **solid-vanilla** (frontend UI library, a vanilla-JS rendering library, not SolidJS).
+A music streaming web app. Built with **Express** (server) + **Vite** (bundler) + **solid-vanilla** (frontend UI library, a vanilla-JS rendering library, not SolidJS).
 
 ## Commands
 
@@ -24,7 +24,7 @@ src/
 ├── server/
 │   ├── server.ts        # Express standalone server (production entry point)
 │   ├── routes.ts        # Configures Express middleware, auto-maps ServerApi methods to POST routes
-│   └── resources/git.ts # Git CLI wrappers (getGitLog, getBranches)
+│   └── resources/       # server methods 
 ├── client/
 │   ├── index.html       # SPA shell
 │   ├── index.ts         # Entry: renders App into #app
@@ -32,10 +32,10 @@ src/
 │       ├── app.ts       # Top-level App component with title + router root
 │       ├── routes.ts    # HashRouter setup
 │       ├── components.ts # Reusable UI primitives (Title, Panel, Button, TextInput, etc.)
-│       └── gitdemo.ts   # Main page: branch selector + git log grid
+│       └── player.ts     # Main page
 └── common/
     ├── interface.ts     # Shared types (GitLog, ServerApi) + fetchJson client helper
-    └── util.ts          # formatDate helper
+    └── util.ts          # Shared utilities - formatDate helper
 ```
 
 ### Key patterns
