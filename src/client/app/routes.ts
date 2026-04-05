@@ -1,13 +1,10 @@
 import { HashRouter, div } from "solid-vanilla";
-import { GitDemo } from "./gitdemo";
+import { PlayPage } from "./player";
 
-const root = div()
-  .css("height", "100%")
-  .css("width", "100%")
-  .attr("id", "router");
+const root = div().css("height", "100%").attr("id", "router");
 
 const router = new HashRouter(root);
 
-router.addRoute("/", () => GitDemo());
+router.addRoute("/", () => PlayPage());
 
 export { router };

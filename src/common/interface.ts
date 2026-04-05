@@ -1,15 +1,17 @@
 export const apiPath = "/api";
 
-export type GitLog = {
-  commitHash: string;
-  commitDate: string;
-  commitAuthor: string;
-  commitMessage: string;
+export type Track = {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  duration: number;
+  path: string;
 };
 
 export type ServerApi = {
-  gitBranches: () => Promise<string[]>;
-  gitLogs: (branch: string, lines?: number) => Promise<GitLog[]>;
+  getTracks: (folder?: string) => Promise<Track[]>;
+  playTrack: (path: string) => Promise<{ message: string }>;
 };
 
 export const fetchJson = <T extends keyof ServerApi>(

@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import path from "path";
 import { configureRoutes } from "./routes";
 
@@ -12,7 +12,7 @@ const distPath = path.resolve(__dirname, "../../dist");
 app.use(express.static(distPath));
 
 // SPA fallback
-app.use((req: Request, res: Response) => {
+app.use((req: express.Request, res: express.Response) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
