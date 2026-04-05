@@ -1,6 +1,8 @@
 import { h, div, vbox, signal, fragment } from "solid-vanilla";
 import { fetchJson, Track } from "../../common/interface";
 import { formatDuration } from "./components";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
+import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 
 const audio = new Audio();
 
@@ -154,78 +156,51 @@ export const PlayPage = () => {
       }
     });
 
-  const trackList = div()
-    .css("flex", "1")
-    .css("overflow-y", "auto")
-    .css("overflow-x", "hidden")
-    .watch([allTracks, filterText], (node) => {
-      const tracks = filtered();
-      if (tracks.length === 0) {
-        node
-          .css("display", "flex")
-          .css("align-items", "center")
-          .css("justify-content", "center")
-          .css("color", "#888")
-          .inner("No tracks found. Add music files to your music folder.");
-        return;
-      }
-      // Header row
-      const header = div()
-        .css("display", "grid")
-        .css("grid-template-columns", "40px 1fr 1fr 60px")
-        .css("padding", "4px 16px")
-        .css("color", "#888")
-        .css("font-size", "12px")
-        .css("border-bottom", "1px solid #333")
-        .css("position", "sticky")
-        .css("top", "0")
-        .css("background", "#121212")
-        .inner(
-          "#",
-          div().inner("Title"),
-          div().inner("Artist"),
-          div().inner("Duration"),
-        );
+  const tabContainer = div().css("height", "100%").css("overflow", "hidden");
 
-      const rows = tracks.map((t, i) =>
-        div()
-          .css("display", "grid")
-          .css("grid-template-columns", "40px 1fr 1fr 60px")
-          .css("padding", "8px 16px")
-          .css("gap", "8px")
-          .css("align-items", "center")
-          .css("border-radius", "4px")
-          .css("cursor", "pointer")
-          .css("color", () => (i === currentIndex.get() ? "#1db954" : ""))
-          .css("background", () =>
-            i === currentIndex.get() ? "#1a3a1a" : "transparent",
-          )
-          .on("click", () => playTrack(i))
-          .inner(
-            div()
-              .css("color", "#888")
-              .css("text-align", "right")
-              .inner(`${i + 1}`),
-            div()
-              .css("overflow", "hidden")
-              .css("text-overflow", "ellipsis")
-              .css("white-space", "nowrap")
-              .inner(t.title),
-            div()
-              .css("color", "#aaa")
-              .css("overflow", "hidden")
-              .css("text-overflow", "ellipsis")
-              .css("white-space", "nowrap")
-              .inner(t.artist),
-            div()
-              .css("color", "#888")
-              .css("text-align", "right")
-              .inner(formatDuration(t.duration || 0)),
-          ),
-      );
+  let table: Tabulator | undefined;
 
-      node.inner(header, ...rows);
+  // Initialize Tabulator after mount
+  fragment().do((node) => {
+    const el = node.el as HTMLElement;
+    el.appendChild(tabContainer.el);
+
+    table = new Tabulator(tabContainer.el, {
+      data: [],
+      columns: [
+        { title: "#", formatter: "rownum", width: 50, hozAlign: "right" },
+        { title: "Title", field: "title" },
+        { title: "Artist", field: "artist" },
+        {
+          title: "Duration",
+          field: "duration",
+          width: 80,
+          hozAlign: "right",
+          formatter: (cell: any) => formatDuration(cell.getValue() || 0),
+        },
+      ],
+      layout: "fitColumns",
+      height: "100%",
+      selectableRows: 1,
     });
+
+    table.on("rowClick", (_e: UIEvent, row: any) => {
+      const idx = filtered().indexOf(row.getData());
+      if (idx >= 0) playTrack(idx);
+    });
+  });
+
+  const trackList = tabContainer;
+  trackList.watch([allTracks, filterText, currentIndex], (_node) => {
+    if (table) {
+      const tracks = filtered();
+      table.replaceData(tracks);
+      const idx = currentIndex.get();
+      if (idx >= 0 && idx < tracks.length) {
+        table.selectRow(idx);
+      }
+    }
+  });
 
   const controlsSection = div()
     .css("display", "flex")
