@@ -11,7 +11,7 @@ configureRoutes(app);
 const distPath = path.resolve(__dirname, "../../dist");
 app.use(express.static(distPath));
 
-// SPA fallback
+// SPA fallback for client side routes without #
 app.use((req: express.Request, res: express.Response) => {
   res.sendFile(path.join(distPath, "index.html"));
 });

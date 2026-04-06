@@ -1,17 +1,11 @@
 export const apiPath = "/api";
 
 export type Track = {
-  id: string;
   title: string;
-  artist: string;
-  album: string;
-  duration: number;
   path: string;
 };
-
 export type ServerApi = {
-  getTracks: (folder?: string) => Promise<Track[]>;
-  playTrack: (path: string) => Promise<{ message: string }>;
+  list: (subDir?: string) => Promise<Track[]>;
 };
 
 export const fetchJson = <T extends keyof ServerApi>(
