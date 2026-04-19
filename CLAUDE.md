@@ -10,8 +10,8 @@ A music streaming web app. Built with **Express** (server) + **Vite** (bundler) 
 
 ```bash
 bun run dev         # Start Vite dev server on port 5177 (includes Express routes via plugin)
-bun run build       # Format then build (tsc + vite build → dist/)
-bun run start       # Build then run the Express server (src/server/server.ts)
+bun run build       # Format typecheck and build
+bun run start       # Production mode run - no vite server
 bun run format      # Format with Prettier
 ```
 
@@ -34,13 +34,13 @@ src/
 │       ├── components.ts # Reusable UI primitives (Title, Panel, Button, TextInput, etc.)
 │       └── player.ts     # Main page
 └── common/
-    ├── interface.ts     # Shared types (GitLog, ServerApi) + fetchJson client helper
-    └── util.ts          # Shared utilities - formatDate helper
+    ├── interface.ts     # Type enforced interface between client and server.
+    └── util.ts          # Shared utilities (must not contain node or browser calls) - formatDate helper
 ```
 
 ### Key patterns
 
-- **API routing**: `configureRoutes()` in `routes.ts` auto-generates POST endpoints from the `ServerApi` interface. Each server method becomes `/api/<methodName>`. The client calls them via `fetchJson("methodName", ...args)` which POSTs the args as a JSON array.
+- **API routing**: `configureRoutes` and `fetchJson` are used for and type enforcement and method alignment.   `routes.ts` auto-generates POST endpoints from the `ServerApi` interface. Each server method becomes `/api/<methodName>`. The client calls them via `fetchJson("methodName", ...args)` which POSTs the args as a JSON array.
 - **solid-vanilla**: This is not SolidJS. It's a custom vanilla-JS reactive UI library (`h()`, `div()`, `vbox()`, `hbox()`, `grid()`, `signal()`, `watch()`, `fragment()`, etc.). Signals drive reactivity; `watch()` and `.do()` handle async updates.
 - **Frontend routes**: Uses `HashRouter` from solid-vanilla with `#`-based routing (currently single route `/` → `GitDemo`).
 - **Dev vs prod**: During dev, Express runs inside Vite via a custom plugin (`expressPlugin`). In production, `server.ts` runs standalone and serves the built `dist/` directory as static files with SPA fallback.

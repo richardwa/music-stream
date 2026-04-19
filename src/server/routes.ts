@@ -2,22 +2,25 @@ import express from "express";
 import { apiPath, type ServerApi } from "../common/interface";
 import { musicFolder } from "./conf";
 import { readdir } from "fs/promises";
-import path from 'path';
+import path from "path";
 
 const serverImpl: ServerApi = {
   list: async (subDir: string = "") => {
-    const files = await readdir(path.join(musicFolder, decodeURIComponent(subDir)), {
-      withFileTypes: true,
-      recursive: true,
-    });
+    const files = await readdir(
+      path.join(musicFolder, decodeURIComponent(subDir)),
+      {
+        withFileTypes: true,
+        recursive: true,
+      },
+    );
 
     const fileList = files.map((f) => {
-      const path = f.parentPath.slice(musicFolder.length)
-      return { title: f.name, path: path === "" ? "/" : path }
+      const path = f.parentPath.slice(musicFolder.length);
+      return { title: f.name, path: path === "" ? "/" : path };
     });
 
     return fileList;
-  }
+  },
 };
 
 export const configureRoutes = (app: ReturnType<typeof express>) => {
