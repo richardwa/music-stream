@@ -17,3 +17,13 @@ body {
   background: #121212;
   color: #eee;
 }
+
+/* tabulator overrides - start */
+.tabulator-row.tabulator-row-even {
+    background-color: #444 
+}
+
+.tabulator-row.tabulator-row-odd {
+    background-color: #444 
+}
+/* tabulator overrides - end */
