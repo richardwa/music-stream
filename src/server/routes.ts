@@ -16,7 +16,7 @@ const serverImpl: ServerApi = {
 
     const fileList = files.map((f) => {
       const path = f.parentPath.slice(musicFolder.length);
-      return { title: f.name, path: path === "" ? "/" : path };
+      return { title: f.name, path: path + "/" };
     });
 
     return fileList;

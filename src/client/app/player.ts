@@ -5,11 +5,26 @@ import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 import { router } from "./routes";
 import type { Track } from "../../common/interface";
 
+const getTrackHref = (t?: Track) => t ? `/stream${t.path}${t.title}` : '';
+
 export const PlayPage = (subDir: Signal<string>) =>
   vbox()
+    .css("gap", "0")
     .css("height", "100%")
     .do((node) => {
-      const header = () => div().inner("Header");
+      const selected = signal<Track>();
+
+      const header = () => div().css("padding", "1rem")
+        .inner(() => selected.get()?.title ?? 'none');
+
+      const footer = () =>
+        h('audio')
+          .css("width", "100%")
+          .css("height", "3rem")
+          .css("padding", "0.5rem")
+          .attr('controls')
+          .attr('autoplay')
+          .attr('src', () => getTrackHref(selected.get()));
 
       const trackList = () =>
         vbox().do(async (node) => {
@@ -23,12 +38,11 @@ export const PlayPage = (subDir: Signal<string>) =>
           });
           table.on("rowClick", (event, row) => {
             const cell = event.target;
+            const data = row.getData() as Track;
             if (row.getCell("path").getElement() === cell) {
-              const data = row.getData() as Track;
-              console.log("path clicked");
               router.navigate(data.path);
             } else {
-              console.log("other fields clicked");
+              selected.set(data);
             }
           });
           node.watch(subDir, async () => {
@@ -37,7 +51,6 @@ export const PlayPage = (subDir: Signal<string>) =>
           });
         });
 
-      const footer = () => div().inner("footer");
 
       node.inner(header(), trackList(), footer());
     });
