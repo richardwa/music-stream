@@ -18,7 +18,20 @@ body {
   color: #eee;
 }
 
+.clickable{
+  color: #87CEFA;
+  cursor: pointer;
+}
+.clickable:hover{
+  text-decoration:underline;
+  text-underline-offset: 4px; /* adjust for desired gap */
+  text-decoration-thickness: 1px;
+}
+
+
+
 /* tabulator overrides - start */
+
 .tabulator-row.tabulator-row-even {
   background-color: #444;
 }

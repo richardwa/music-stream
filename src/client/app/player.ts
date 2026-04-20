@@ -7,6 +7,20 @@ import type { Track } from "../../common/interface";
 
 const getTrackHref = (t?: Track) => (t ? `/stream${t.path}${t.title}` : "");
 
+const PathLink = (title: string, path: string) =>
+  h('span')
+    .attr('class', 'clickable')
+    .css('padding', '0.1rem')
+    .on('click', () => {
+      router.navigate(path);
+    }).inner(title);
+
+const BreadCrumbs = (path: string) => {
+  const paths = path.split('/').filter(Boolean);
+  return fragment().inner(...paths.map((path, i) =>
+    PathLink(path, '/' + paths.slice(0, i + 1).join('/'))));
+}
+
 export const PlayPage = (subDir: Signal<string>) =>
   vbox()
     .css("gap", "0")
@@ -18,16 +32,11 @@ export const PlayPage = (subDir: Signal<string>) =>
       const header = div()
         .css("padding", "0.5rem")
         .css('display', 'flex')
-        .css('gap', '1rem')
+        .css('gap', '0.5rem')
         .css('align-items', 'center')
         .inner(
-          h('button').attr('type', 'button')
-            .css('padding', '0.1rem 0.5rem')
-            .css("cursor", "pointer")
-            .on('click', () => {
-              router.navigate('/');
-            }).inner('music'),
-          fragment().inner(subDir),
+          PathLink('music', '/'),
+          () => BreadCrumbs(subDir.get()),
           fragment().inner(() => `(${totalFiles.get()})`));
 
 
@@ -58,15 +67,14 @@ export const PlayPage = (subDir: Signal<string>) =>
                 hozAlign: "right",
               },
               {
-                title: "Title", widthGrow: 2, field: "title", formatter: (cell) => {
+                title: "Title", widthGrow: 2, field: "title",
+                formatter: (cell) => {
+                  cell.getElement().classList.add('clickable');
+                  return cell.getValue().replaceAll('_', ' ')
+                },
+                cellClick: (ev, cell) => {
                   const data = cell.getData() as Track;
-                  return div()
-                    .css("cursor", "pointer")
-                    .css('width', '100%')
-                    .on('click', () => {
-                      selected.set(data);
-                    })
-                    .inner(data.title).el;
+                  selected.set(data);
                 }
               },
               {
@@ -75,15 +83,8 @@ export const PlayPage = (subDir: Signal<string>) =>
                   const paths = data.path.split('/').filter(Boolean);
                   return paths.length === 0 ? '' : div()
                     .css('display', 'flex')
-                    .css('gap', '1rem')
-                    .inner(
-                      ...paths.map((path, i) =>
-                        span()
-                          .css("cursor", "pointer")
-                          .on('click', () => {
-                            const fullPath = '/' + paths.slice(0, i + 1).join('/');
-                            router.navigate(fullPath);
-                          }).inner(path))).el;
+                    .css('gap', '0.5rem')
+                    .inner(BreadCrumbs(data.path)).el;
 
                 }
               },
