@@ -18,17 +18,15 @@ body {
   color: #eee;
 }
 
-.clickable{
-  color: #87CEFA;
+.clickable {
+  color: #87cefa;
   cursor: pointer;
 }
-.clickable:hover{
-  text-decoration:underline;
+.clickable:hover {
+  text-decoration: underline;
   text-underline-offset: 4px; /* adjust for desired gap */
   text-decoration-thickness: 1px;
 }
-
-
 
 /* tabulator overrides - start */
 
