@@ -20,10 +20,10 @@ body {
 
 /* tabulator overrides - start */
 .tabulator-row.tabulator-row-even {
-    background-color: #444 
+  background-color: #444;
 }
 
 .tabulator-row.tabulator-row-odd {
-    background-color: #444 
+  background-color: #444;
 }
 /* tabulator overrides - end */

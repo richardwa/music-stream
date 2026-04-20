@@ -14,10 +14,12 @@ const serverImpl: ServerApi = {
       },
     );
 
-    const fileList = files.filter(f => f.isFile()).map((f) => {
-      const path = f.parentPath.slice(musicFolder.length);
-      return { title: f.name, path: path + "/" };
-    });
+    const fileList = files
+      .filter((f) => f.isFile())
+      .map((f) => {
+        const path = f.parentPath.slice(musicFolder.length);
+        return { title: f.name, path: path + "/" };
+      });
 
     return fileList;
   },
