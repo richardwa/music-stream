@@ -120,11 +120,11 @@
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
 
-    "@types/express": ["@types/express@github:types/express#7670cf1", { "dependencies": { "@types/serve-static": "github:types/npm-serve-static#c1f96843c8b96a37f6c534cb1dadb48f5329e4e0", "path-to-regexp": "github:pillarjs/path-to-regexp#ec285ed3500aed455df59e3b8b07f473412918a4" }, "peerDependencies": { "@types/node": "*" } }, "types-express-7670cf1"],
+    "@types/express": ["@types/express@github:types/express#7670cf1", { "dependencies": { "@types/serve-static": "github:types/npm-serve-static#c1f96843c8b96a37f6c534cb1dadb48f5329e4e0", "path-to-regexp": "github:pillarjs/path-to-regexp#ec285ed3500aed455df59e3b8b07f473412918a4" }, "peerDependencies": { "@types/node": "*" } }, "types-express-7670cf1", "sha512-hlxXqO4VyeNGHfN//rq/Ce22cSkipv5DR7blgNU3qKU4pfQgjqwWfty65gBBxl5J52xJesa0W4oLCn87YJn/aw=="],
 
     "@types/node": ["@types/node@25.5.2", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-tO4ZIRKNC+MDWV4qKVZe3Ql/woTnmHDr5JD8UI5hn2pwBrHEwOEMZK7WlNb5RKB6EoJ02gwmQS9OrjuFnZYdpg=="],
 
-    "@types/serve-static": ["@types/serve-static@github:types/npm-serve-static#c1f9684", { "peerDependencies": { "@types/node": "*" } }, "typed-typings-npm-serve-static-c1f9684"],
+    "@types/serve-static": ["@types/serve-static@github:types/npm-serve-static#c1f9684", { "peerDependencies": { "@types/node": "*" } }, "typed-typings-npm-serve-static-c1f9684", "sha512-Vc6wTx936su6sHpNImIykjMUXzFyr9XjoIGDe1FGSxdXe3rWD/AyQ/xMwnLmF2qPGMqZiIMDzt4qH9PLn08s+Q=="],
 
     "@types/tabulator-tables": ["@types/tabulator-tables@6.3.1", "", {}, "sha512-qL05wGXVy0yfWcF8LCE9+9uSeUIpeKdgpm8YmOAPTjLd3FaoZziPOhVxIiLzEhLTFfOvbuwnaWDm4v4i87diRQ=="],
 
@@ -232,7 +232,7 @@
 
     "parseurl": ["parseurl@1.3.3", "", {}, "sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ=="],
 
-    "path-to-regexp": ["path-to-regexp@github:pillarjs/path-to-regexp#ec285ed", { "dependencies": { "isarray": "0.0.1" } }, "pillarjs-path-to-regexp-ec285ed"],
+    "path-to-regexp": ["path-to-regexp@github:pillarjs/path-to-regexp#ec285ed", { "dependencies": { "isarray": "0.0.1" } }, "pillarjs-path-to-regexp-ec285ed", "sha512-AzDZdhcTRbpJeg1k3AusFiM3KdJYsgpmRJ2eSdiu3puaj9g9+mwtwCXdeqj07uBQpA5M2i+nXpv3LQ7P9Nd5fw=="],
 
     "picocolors": ["picocolors@1.1.1", "", {}, "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="],
 
