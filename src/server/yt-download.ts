@@ -1,3 +1,5 @@
+import { spawn } from "child_process";
+
 const runCommand = (cmd: string, args: string[]): Promise<void> =>
   new Promise((resolve, reject) => {
     const proc = spawn(cmd, args, { stdio: "inherit" });
@@ -9,12 +11,10 @@ const runCommand = (cmd: string, args: string[]): Promise<void> =>
     });
   });
 
-
 export const downloadList = async (
   dlDirectory: string,
-  listId: string
+  listId: string,
 ): Promise<void> => {
-
   const now = (): string =>
     new Date().toISOString().replace("T", " ").substring(0, 19);
 
@@ -24,25 +24,37 @@ export const downloadList = async (
     "-k",
     "--extract-audio",
     "--restrict-filenames",
-    "--audio-format", "mp3",
-    "--audio-quality", "0",
-    "--cache-dir", "/home/public/app_data/yt-download/.cache",
-    "--download-archive", "/home/public/app_data/yt-download/.cache/download.txt",
-    "--output", `${dlDirectory}/%(title)s-%(id)s.%(ext)s`,
+    "--audio-format",
+    "mp3",
+    "--audio-quality",
+    "0",
+    "--cache-dir",
+    "/home/public/app_data/yt-download/.cache",
+    "--download-archive",
+    "/home/public/app_data/yt-download/.cache/download.txt",
+    "--output",
+    `${dlDirectory}/%(title)s-%(id)s.%(ext)s`,
     "-i",
-    listId
+    listId,
   ]);
 
   await runCommand("find", [
     dlDirectory,
-    "-type", "f",
-    "-not", "(",
-    "-iname", "*.mp3",
-    "-o", "-iname", "*.wma",
+    "-type",
+    "f",
+    "-not",
+    "(",
+    "-iname",
+    "*.mp3",
+    "-o",
+    "-iname",
+    "*.wma",
     ")",
-    "-exec", "mv",
-    "-t", "/home/public/videos/youtube/",
-    "{}", "+"
+    "-exec",
+    "mv",
+    "-t",
+    "/home/public/videos/youtube/",
+    "{}",
+    "+",
   ]);
 };
-

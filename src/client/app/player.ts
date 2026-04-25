@@ -1,4 +1,13 @@
-import { h, div, span, button, vbox, signal, fragment, Signal } from "solid-vanilla";
+import {
+  h,
+  div,
+  span,
+  button,
+  vbox,
+  signal,
+  fragment,
+  Signal,
+} from "solid-vanilla";
 import { fetchJson } from "../../common/interface";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator_midnight.min.css";
@@ -25,21 +34,38 @@ const BreadCrumbs = (path: string) => {
   );
 };
 
+const highlightRow = (table: Tabulator, index: number) => {
+  table.getRows().forEach((r) => {
+    r.getElement().classList.remove("highlighted-row");
+  });
+  table.getRowFromPosition(index).getElement().classList.add("highlighted-row");
+};
+
 export const PlayPage = (subDir: Signal<string>) =>
   vbox()
     .css("gap", "0")
     .css("height", "100%")
     .do((node) => {
       let table: Tabulator | undefined;
-      const selected = signal<{ index: number, track: Track }>();
+      const current = signal<number>();
+      node.watch(current, () => {
+        const index = current.get();
+        if (table == null || index == null) return;
+        highlightRow(table, index);
+      });
       const totalFiles = signal<number>(0);
+      const getCurrentTrack = () => {
+        const index = current.get();
+        if (table == null || index == null) return;
+        const track = table.getRowFromPosition(index).getData() as Track;
+        return track;
+      };
+
       const next = () => {
-        const current = selected.get();
-        if (table == null || current == null) return;
-        const nextIndex = (current.index + 1) % totalFiles.get()
-        const track = table.getRows()[nextIndex].getData() as Track;
-        selected.set({ index: nextIndex, track })
-      }
+        const index = current.get() ?? 0;
+        const nextIndex = (index + 1) % totalFiles.get();
+        current.set(nextIndex);
+      };
 
       const header = div()
         .css("padding", "0.5rem")
@@ -50,20 +76,20 @@ export const PlayPage = (subDir: Signal<string>) =>
           PathLink("music", "/"),
           () => BreadCrumbs(subDir.get()),
           fragment().inner(() => `(${totalFiles.get()})`),
-          button().on('click', next).inner('next')
+          button().on("click", next).inner("next"),
         );
 
       const footer = vbox()
         .css("padding", "0.5rem")
         .inner(
-          div().inner(() => selected.get()?.track.title),
+          div().inner(() => getCurrentTrack()?.title),
           h("audio")
             .css("width", "100%")
             .css("height", "3rem")
             .attr("controls")
             .attr("autoplay")
-            .attr("src", () => getTrackHref(selected.get()?.track))
-            .on('ended', next)
+            .attr("src", () => getTrackHref(getCurrentTrack()))
+            .on("ended", next),
         );
 
       const trackList = vbox()
@@ -88,9 +114,8 @@ export const PlayPage = (subDir: Signal<string>) =>
                   return cell.getValue().replaceAll("_", " ");
                 },
                 cellClick: (ev, cell) => {
-                  const track = cell.getData() as Track;
                   const index = cell.getRow().getPosition() as number;
-                  selected.set({ index, track });
+                  current.set(index);
                 },
               },
               {
@@ -102,9 +127,9 @@ export const PlayPage = (subDir: Signal<string>) =>
                   return paths.length === 0
                     ? ""
                     : div()
-                      .css("display", "flex")
-                      .css("gap", "0.5rem")
-                      .inner(BreadCrumbs(data.path)).el;
+                        .css("display", "flex")
+                        .css("gap", "0.5rem")
+                        .inner(BreadCrumbs(data.path)).el;
                 },
               },
             ],

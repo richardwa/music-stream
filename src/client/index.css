@@ -37,4 +37,9 @@ body {
 .tabulator-row.tabulator-row-odd {
   background-color: #444;
 }
+
+.tabulator-row.tabulator-row-odd.highlighted-row,
+.tabulator-row.tabulator-row-even.highlighted-row {
+  background-color: #000;
+}
 /* tabulator overrides - end */
