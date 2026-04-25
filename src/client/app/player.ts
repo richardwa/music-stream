@@ -1,4 +1,4 @@
-import { h, div, span, vbox, signal, fragment, Signal } from "solid-vanilla";
+import { h, div, span, button, vbox, signal, fragment, Signal } from "solid-vanilla";
 import { fetchJson } from "../../common/interface";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator_midnight.min.css";
@@ -30,8 +30,16 @@ export const PlayPage = (subDir: Signal<string>) =>
     .css("gap", "0")
     .css("height", "100%")
     .do((node) => {
-      const selected = signal<Track>();
+      let table: Tabulator | undefined;
+      const selected = signal<{ index: number, track: Track }>();
       const totalFiles = signal<number>(0);
+      const next = () => {
+        const current = selected.get();
+        if (table == null || current == null) return;
+        const nextIndex = (current.index + 1) % totalFiles.get()
+        const track = table.getRows()[nextIndex].getData() as Track;
+        selected.set({ index: nextIndex, track })
+      }
 
       const header = div()
         .css("padding", "0.5rem")
@@ -42,24 +50,26 @@ export const PlayPage = (subDir: Signal<string>) =>
           PathLink("music", "/"),
           () => BreadCrumbs(subDir.get()),
           fragment().inner(() => `(${totalFiles.get()})`),
+          button().on('click', next).inner('next')
         );
 
       const footer = vbox()
         .css("padding", "0.5rem")
         .inner(
-          div().inner(() => selected.get()?.title),
+          div().inner(() => selected.get()?.track.title),
           h("audio")
             .css("width", "100%")
             .css("height", "3rem")
             .attr("controls")
             .attr("autoplay")
-            .attr("src", () => getTrackHref(selected.get())),
+            .attr("src", () => getTrackHref(selected.get()?.track))
+            .on('ended', next)
         );
 
       const trackList = vbox()
         .css("height", "100%")
         .do(async (node) => {
-          const table = new Tabulator(node.el, {
+          table = new Tabulator(node.el, {
             layout: "fitColumns",
             selectableRows: false,
             columns: [
@@ -78,8 +88,9 @@ export const PlayPage = (subDir: Signal<string>) =>
                   return cell.getValue().replaceAll("_", " ");
                 },
                 cellClick: (ev, cell) => {
-                  const data = cell.getData() as Track;
-                  selected.set(data);
+                  const track = cell.getData() as Track;
+                  const index = cell.getRow().getPosition() as number;
+                  selected.set({ index, track });
                 },
               },
               {
@@ -91,16 +102,16 @@ export const PlayPage = (subDir: Signal<string>) =>
                   return paths.length === 0
                     ? ""
                     : div()
-                        .css("display", "flex")
-                        .css("gap", "0.5rem")
-                        .inner(BreadCrumbs(data.path)).el;
+                      .css("display", "flex")
+                      .css("gap", "0.5rem")
+                      .inner(BreadCrumbs(data.path)).el;
                 },
               },
             ],
           });
           node.watch(subDir, async () => {
             const files = await fetchJson("list", subDir.get());
-            table.setData(files);
+            table?.setData(files);
             totalFiles.set(files.length);
           });
         });
