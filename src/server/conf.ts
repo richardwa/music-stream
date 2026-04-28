@@ -1,4 +1,9 @@
-if (process.env.MUSIC_FOLDER == null) {
-  throw new Error("MUSIC_FOLDER not defined");
-}
-export const musicFolder = process.env.MUSIC_FOLDER;
+type Key = "MUSIC_FOLDER" | "VIDEO_FOLDER" | "DL_TEMP";
+
+export const getEnv = (key: Key) => {
+  const val = process.env[key];
+  if (val == null) {
+    throw new Error(`${key} not defined`);
+  }
+  return val;
+};

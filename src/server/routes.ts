@@ -1,11 +1,14 @@
 import express from "express";
 import { apiPath, type ServerApi } from "../common/interface";
-import { musicFolder } from "./conf";
+import { getEnv } from "./conf";
 import { readdir } from "fs/promises";
 import path from "path";
 
+const audioExtensions = new Set([".mp3", ".wma", ".flac"]);
+
 const serverImpl: ServerApi = {
   list: async (subDir: string = "") => {
+    const musicFolder = getEnv("MUSIC_FOLDER");
     const files = await readdir(
       path.join(musicFolder, decodeURIComponent(subDir)),
       {
@@ -15,7 +18,11 @@ const serverImpl: ServerApi = {
     );
 
     const fileList = files
-      .filter((f) => f.isFile())
+      .filter((f) => {
+        if (!f.isFile()) return false;
+        const ext = path.extname(f.name).toLowerCase();
+        return audioExtensions.has(ext)
+      })
       .map((f) => {
         const path = f.parentPath.slice(musicFolder.length);
         return { title: f.name, path: path + "/" };
@@ -41,5 +48,6 @@ export const configureRoutes = (app: ReturnType<typeof express>) => {
     });
   });
   app.use(apiPath, routes);
+  const musicFolder = getEnv("MUSIC_FOLDER");
   app.use("/stream", express.static(musicFolder));
 };
