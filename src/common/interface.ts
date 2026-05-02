@@ -6,7 +6,7 @@ export type Track = {
 };
 export type ServerApi = {
   list: (subDir?: string) => Promise<Track[]>;
-  ytdl: () => Promise<string[]>;
+  ytdl: (path: string) => Promise<void>;
 };
 
 export const fetchJson = <T extends keyof ServerApi>(

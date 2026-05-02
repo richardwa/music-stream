@@ -1,4 +1,7 @@
 import { spawn } from "child_process";
+import path from "path";
+import { getEnv } from "./conf";
+import { formatDate } from "../common/util";
 
 const runCommand = (cmd: string, args: string[]): Promise<void> =>
   new Promise((resolve, reject) => {
@@ -15,10 +18,9 @@ export const downloadList = async (
   dlDirectory: string,
   listId: string,
 ): Promise<void> => {
-  const now = (): string =>
-    new Date().toISOString().replace("T", " ").substring(0, 19);
+  const now = formatDate(new Date());
 
-  console.log(`${now()} download to: ${dlDirectory}`);
+  console.log(`${now} download to: ${dlDirectory}`);
 
   await runCommand("yt-dlp", [
     "-k",
@@ -29,11 +31,11 @@ export const downloadList = async (
     "--audio-quality",
     "0",
     "--cache-dir",
-    "/home/public/app_data/yt-download/.cache",
+    path.join(getEnv("DL_TEMP"), ".cache"),
     "--download-archive",
-    "/home/public/app_data/yt-download/.cache/download.txt",
+    path.join(dlDirectory, ".downloaded.txt"),
     "--output",
-    `${dlDirectory}/%(title)s-%(id)s.%(ext)s`,
+    path.join(dlDirectory, "%(title)s-%(id)s.%(ext)s"),
     "-i",
     listId,
   ]);
@@ -53,7 +55,7 @@ export const downloadList = async (
     "-exec",
     "mv",
     "-t",
-    "/home/public/videos/youtube/",
+    getEnv("VIDEO_FOLDER"),
     "{}",
     "+",
   ]);

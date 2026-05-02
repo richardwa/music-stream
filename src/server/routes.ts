@@ -1,7 +1,8 @@
 import express from "express";
 import { apiPath, type ServerApi } from "../common/interface";
 import { getEnv } from "./conf";
-import { readdir } from "fs/promises";
+import { readdir, readFile } from "fs/promises";
+import { downloadList } from "./yt-download";
 import path from "path";
 
 const audioExtensions = new Set([".mp3", ".wma", ".flac"]);
@@ -21,7 +22,7 @@ const serverImpl: ServerApi = {
       .filter((f) => {
         if (!f.isFile()) return false;
         const ext = path.extname(f.name).toLowerCase();
-        return audioExtensions.has(ext)
+        return audioExtensions.has(ext);
       })
       .map((f) => {
         const path = f.parentPath.slice(musicFolder.length);
@@ -30,8 +31,11 @@ const serverImpl: ServerApi = {
 
     return fileList;
   },
-  ytdl: async () => {
-    return [""];
+  ytdl: async (subDir: string) => {
+    const musicFolder = getEnv("MUSIC_FOLDER");
+    const absPath = path.join(musicFolder, subDir);
+    const id = await readFile(path.join(absPath, ".yt-list-id.txt"), "utf8");
+    await downloadList(absPath, id);
   },
 };
 
