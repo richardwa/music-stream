@@ -33,7 +33,7 @@ export const downloadList = async (
     "--cache-dir",
     path.join(getEnv("DL_TEMP"), ".cache"),
     "--download-archive",
-    path.join(dlDirectory, ".downloaded.txt"),
+    path.join(dlDirectory, ".yt-downloaded.txt"),
     "--output",
     path.join(dlDirectory, "%(title)s-%(id)s.%(ext)s"),
     "-i",
