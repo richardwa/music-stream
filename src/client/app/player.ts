@@ -77,6 +77,16 @@ export const PlayPage = (subDir: Signal<string>) =>
           () => BreadCrumbs(subDir.get()),
           fragment().inner(() => `(${totalFiles.get()})`),
           button().on("click", next).inner("next"),
+          fragment().watch(subDir, async (node) => {
+            const id = await fetchJson('ytListId', subDir.get());
+            node.inner(
+              id != null ?
+                button().on("click", async () => {
+                  await fetchJson('ytProccess', subDir.get(), id)
+                }).inner("refresh " + id)
+                : ''
+            );
+          })
         );
 
       const footer = vbox()
@@ -127,9 +137,9 @@ export const PlayPage = (subDir: Signal<string>) =>
                   return paths.length === 0
                     ? ""
                     : div()
-                        .css("display", "flex")
-                        .css("gap", "0.5rem")
-                        .inner(BreadCrumbs(data.path)).el;
+                      .css("display", "flex")
+                      .css("gap", "0.5rem")
+                      .inner(BreadCrumbs(data.path)).el;
                 },
               },
             ],

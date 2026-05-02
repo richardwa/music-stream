@@ -6,15 +6,22 @@ export type Track = {
 };
 export type ServerApi = {
   list: (subDir?: string) => Promise<Track[]>;
-  ytdl: (path: string) => Promise<void>;
+  ytListId: (subDir: string) => Promise<string | undefined>;
+  ytProccess: (subDir: string, id: string) => Promise<void>;
 };
 
-export const fetchJson = <T extends keyof ServerApi>(
+export const fetchJson = async <T extends keyof ServerApi>(
   key: T,
   ...params: Parameters<ServerApi[T]>
-) =>
-  fetch(`${apiPath}/${key}`, {
+): Promise<ReturnType<ServerApi[T]>> => {
+  const resp = await fetch(`${apiPath}/${key}`, {
     method: "post",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),
-  }).then((res) => res.json()) as ReturnType<ServerApi[T]>;
+  });
+  try {
+    return await resp.json();
+  } catch {
+    return undefined as any;
+  }
+}
