@@ -2,13 +2,12 @@ import express from "express";
 import { apiPath, type ServerApi } from "../common/interface";
 import { getEnv } from "./conf";
 import { readdir, readFile } from "fs/promises";
-import { downloadList } from "./yt-download";
+import { downloadList, isProcessing } from "./yt-download";
 import path from "path";
 
 const audioExtensions = new Set([".mp3", ".wma", ".flac"]);
 
 class ServerImpl implements ServerApi {
-
   async list(subDir: string = "") {
     const musicFolder = getEnv("MUSIC_FOLDER");
     const files = await readdir(
@@ -31,8 +30,11 @@ class ServerImpl implements ServerApi {
       });
 
     return fileList;
-  };
+  }
 
+  async ytBusy() {
+    return isProcessing();
+  }
   async ytListId(subDir: string) {
     const musicFolder = getEnv("MUSIC_FOLDER");
     const absPath = path.join(musicFolder, subDir);
@@ -47,14 +49,16 @@ class ServerImpl implements ServerApi {
   async ytProccess(subDir: string, id: string) {
     const actualId = await this.ytListId(subDir);
     if (actualId !== id) {
-      throw new Error('incorrect list id');
+      throw new Error("incorrect list id");
+    }
+    if (isProcessing()) {
+      throw new Error("yt-dlp already processing");
     }
     const musicFolder = getEnv("MUSIC_FOLDER");
     const absPath = path.join(musicFolder, subDir);
-    await downloadList(absPath, actualId);
+    void downloadList(absPath, actualId);
   }
 }
-
 
 export const configureRoutes = (app: ReturnType<typeof express>) => {
   // @ts-ignore

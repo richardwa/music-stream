@@ -7,6 +7,7 @@ export type Track = {
 export type ServerApi = {
   list: (subDir?: string) => Promise<Track[]>;
   ytListId: (subDir: string) => Promise<string | undefined>;
+  ytBusy: () => Promise<boolean>;
   ytProccess: (subDir: string, id: string) => Promise<void>;
 };
 
@@ -24,4 +25,4 @@ export const fetchJson = async <T extends keyof ServerApi>(
   } catch {
     return undefined as any;
   }
-}
+};
