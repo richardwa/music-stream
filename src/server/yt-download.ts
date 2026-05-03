@@ -5,6 +5,7 @@ import { formatDate } from "../common/util";
 
 const runCommand = (cmd: string, args: string[]): Promise<void> =>
   new Promise((resolve, reject) => {
+    console.log(`${cmd} ${args.join(' ')}`);
     const proc = spawn(cmd, args, { stdio: "inherit" });
 
     proc.on("close", (code) => {
