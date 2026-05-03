@@ -2,5 +2,7 @@
 
 MUSIC_FOLDER=~/music \
   VIDEO_FOLDER=~/video \
-  DL_TEMP=~/.yt-download \
+  YT_CACHE=~/.yt-download/cache \
+  YT_TMP=~/.yt-download/tmp \
+  YT_DOWNLOADED_TXT=~/.yt-download/downloaded.txt \
   npm run dev

@@ -21,7 +21,11 @@ export const downloadList = async (
   const now = formatDate(new Date());
 
   console.log(`${now} download to: ${dlDirectory}`);
-  const tmpDir = path.join(dlDirectory, '.yt-cache');
+  const cacheDir = getEnv("YT_CACHE");
+  const tmpDir = getEnv("YT_TMP");
+  const downloadArchiveTxt = getEnv("YT_DOWNLOADED_TXT");
+  const videoDir = getEnv("VIDEO_FOLDER");
+
 
   await runCommand("yt-dlp", [
     "-k",
@@ -31,10 +35,8 @@ export const downloadList = async (
     "mp3",
     "--audio-quality",
     "0",
-    "--cache-dir",
-    path.join(getEnv("DL_TEMP"), ".cache"),
-    "--download-archive",
-    path.join(dlDirectory, ".yt-downloaded.txt"),
+    "--cache-dir", cacheDir,
+    "--download-archive", downloadArchiveTxt,
     "--output",
     path.join(tmpDir, "%(title)s-%(id)s.%(ext)s"),
     "-i",
@@ -69,7 +71,7 @@ export const downloadList = async (
     "-exec",
     "mv",
     "-t",
-    getEnv("VIDEO_FOLDER"),
+    videoDir,
     "{}",
     "+",
   ]);
