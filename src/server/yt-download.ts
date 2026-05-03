@@ -21,6 +21,7 @@ export const downloadList = async (
   const now = formatDate(new Date());
 
   console.log(`${now} download to: ${dlDirectory}`);
+  const tmpDir = path.join(dlDirectory, '.yt-cache');
 
   await runCommand("yt-dlp", [
     "-k",
@@ -35,16 +36,16 @@ export const downloadList = async (
     "--download-archive",
     path.join(dlDirectory, ".yt-downloaded.txt"),
     "--output",
-    path.join(dlDirectory, "%(title)s-%(id)s.%(ext)s"),
+    path.join(tmpDir, "%(title)s-%(id)s.%(ext)s"),
     "-i",
     listId,
   ]);
 
+  // move audio files to dlDirectory
   await runCommand("find", [
-    dlDirectory,
+    tmpDir,
     "-type",
     "f",
-    "-not",
     "(",
     "-iname",
     "*.mp3",
@@ -52,6 +53,19 @@ export const downloadList = async (
     "-iname",
     "*.wma",
     ")",
+    "-exec",
+    "mv",
+    "-t",
+    dlDirectory,
+    "{}",
+    "+",
+  ]);
+
+  // move remaining to VIDEO_FOLDER
+  await runCommand("find", [
+    tmpDir,
+    "-type",
+    "f",
     "-exec",
     "mv",
     "-t",
