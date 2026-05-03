@@ -33,6 +33,7 @@ export const downloadList = async (
     processing = true;
     await runCommand("yt-dlp", [
       "-k",
+      "--skip-download",
       "--extract-audio",
       "--restrict-filenames",
       "--audio-format",

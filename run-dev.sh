@@ -1,5 +1,7 @@
 #/bin/bash
 
+npm run build
+
 MUSIC_FOLDER=~/music \
   VIDEO_FOLDER=~/video \
   YT_CACHE=~/.yt-download/cache \

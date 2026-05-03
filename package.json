@@ -8,7 +8,7 @@
     "format": "prettier -w *.json *.ts ./src",
     "prebuild": "npm run format",
     "build": "tsc && vite build",
-    "prestart": "npm run build",
+    "postbuild": "git rev-parse --short HEAD > dist/version.txt",
     "start": "tsx src/server/server.ts"
   },
   "devDependencies": {
