@@ -78,7 +78,8 @@ export const PlayPage = (subDir: Signal<string>) =>
         table.setData(rows);
         if (currentTrack) {
           const index = rows.findIndex(
-            (t) => t.title === currentTrack.title && t.path === currentTrack.path,
+            (t) =>
+              t.title === currentTrack.title && t.path === currentTrack.path,
           );
           if (index >= 0) current.set(index);
         }
