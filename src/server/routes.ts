@@ -23,9 +23,6 @@ const serverImpl: ServerApi = {
 
     return fileList;
   },
-  ytdl: async () => {
-    return [""];
-  },
 };
 
 export const configureRoutes = (app: ReturnType<typeof express>) => {
