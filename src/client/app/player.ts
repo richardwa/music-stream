@@ -67,6 +67,23 @@ export const PlayPage = (subDir: Signal<string>) =>
         current.set(nextIndex);
       };
 
+      const shuffle = () => {
+        if (table == null || totalFiles.get() === 0) return;
+        const currentTrack = getCurrentTrack();
+        const rows = table.getData() as Track[];
+        for (let i = rows.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [rows[i], rows[j]] = [rows[j], rows[i]];
+        }
+        table.setData(rows);
+        if (currentTrack) {
+          const index = rows.findIndex(
+            (t) => t.title === currentTrack.title && t.path === currentTrack.path,
+          );
+          if (index >= 0) current.set(index);
+        }
+      };
+
       const header = div()
         .css("padding", "0.5rem")
         .css("display", "flex")
@@ -76,6 +93,7 @@ export const PlayPage = (subDir: Signal<string>) =>
           PathLink("music", "/"),
           () => BreadCrumbs(subDir.get()),
           fragment().inner(() => `(${totalFiles.get()})`),
+          button().on("click", shuffle).inner("shuffle"),
           button().on("click", next).inner("next"),
         );
 
