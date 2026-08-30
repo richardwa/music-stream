@@ -1,15 +1,11 @@
 import express from "express";
 import { apiPath, type ServerApi } from "../common/interface";
-import { getEnv } from "./conf";
-import { readdir, readFile } from "fs/promises";
-import { downloadList, isProcessing } from "./yt-download";
+import { musicFolder } from "./conf";
+import { readdir } from "fs/promises";
 import path from "path";
 
-const audioExtensions = new Set([".mp3", ".wma", ".flac"]);
-
-class ServerImpl implements ServerApi {
-  async list(subDir: string = "") {
-    const musicFolder = getEnv("MUSIC_FOLDER");
+const serverImpl: ServerApi = {
+  list: async (subDir: string = "") => {
     const files = await readdir(
       path.join(musicFolder, decodeURIComponent(subDir)),
       {
@@ -19,69 +15,31 @@ class ServerImpl implements ServerApi {
     );
 
     const fileList = files
-      .filter((f) => {
-        if (!f.isFile()) return false;
-        const ext = path.extname(f.name).toLowerCase();
-        return audioExtensions.has(ext);
-      })
+      .filter((f) => f.isFile())
       .map((f) => {
         const path = f.parentPath.slice(musicFolder.length);
         return { title: f.name, path: path + "/" };
       });
 
     return fileList;
-  }
-
-  async ytBusy() {
-    return isProcessing();
-  }
-  async ytListId(subDir: string) {
-    const musicFolder = getEnv("MUSIC_FOLDER");
-    const absPath = path.join(musicFolder, subDir);
-    try {
-      const id = await readFile(path.join(absPath, ".yt-list-id.txt"), "utf8");
-      return id.trimEnd();
-    } catch {
-      return;
-    }
-  }
-
-  async ytProccess(subDir: string, id: string) {
-    const actualId = await this.ytListId(subDir);
-    if (actualId !== id) {
-      throw new Error("incorrect list id");
-    }
-    if (isProcessing()) {
-      throw new Error("yt-dlp already processing");
-    }
-    const musicFolder = getEnv("MUSIC_FOLDER");
-    const absPath = path.join(musicFolder, subDir);
-    void downloadList(absPath, actualId);
-  }
-}
+  },
+  ytdl: async () => {
+    return [""];
+  },
+};
 
 export const configureRoutes = (app: ReturnType<typeof express>) => {
   // @ts-ignore
   app.use(express.json());
   const routes = express.Router();
-  const serverImpl = new ServerImpl();
-  const proto = Object.getPrototypeOf(serverImpl);
-
-  for (const name of Object.getOwnPropertyNames(proto)) {
-    if (name === "constructor") continue;
-
-    const valueFn = (proto as any)[name];
-    if (typeof valueFn === "function") {
-      const boundFn = valueFn.bind(serverImpl);
-      routes.post(`/${name}`, async (req: any, res: express.Response) => {
-        const params: unknown[] = req?.body ?? [];
-        // @ts-ignore
-        const result = await boundFn(...params);
-        res.json(result);
-      });
-    }
-  }
+  Object.entries(serverImpl).forEach(([key, fn]) => {
+    routes.post(`/${key}`, async (req: any, res: express.Response) => {
+      const params: unknown[] = req?.body ?? [];
+      // @ts-ignore
+      const result = await fn(...params);
+      res.json(result);
+    });
+  });
   app.use(apiPath, routes);
-  const musicFolder = getEnv("MUSIC_FOLDER");
   app.use("/stream", express.static(musicFolder));
 };

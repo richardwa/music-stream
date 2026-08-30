@@ -13,7 +13,6 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 import { router } from "./routes";
 import type { Track } from "../../common/interface";
-import { ytButton } from "./yt-button";
 
 const getTrackHref = (t?: Track) => (t ? `/stream${t.path}${t.title}` : "");
 
@@ -78,7 +77,6 @@ export const PlayPage = (subDir: Signal<string>) =>
           () => BreadCrumbs(subDir.get()),
           fragment().inner(() => `(${totalFiles.get()})`),
           button().on("click", next).inner("next"),
-          ytButton(subDir),
         );
 
       const footer = vbox()

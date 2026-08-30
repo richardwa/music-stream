@@ -1,11 +1,7 @@
 import { spawn } from "child_process";
-import path from "path";
-import { getEnv } from "./conf";
-import { formatDate } from "../common/util";
 
 const runCommand = (cmd: string, args: string[]): Promise<void> =>
   new Promise((resolve, reject) => {
-    console.log(`${cmd} ${args.join(' ')}`);
     const proc = spawn(cmd, args, { stdio: "inherit" });
 
     proc.on("close", (code) => {
@@ -14,76 +10,51 @@ const runCommand = (cmd: string, args: string[]): Promise<void> =>
         : reject(new Error(`${cmd} exited with code ${code}`));
     });
   });
-let processing = false;
-export const isProcessing = () => processing;
 
 export const downloadList = async (
   dlDirectory: string,
   listId: string,
 ): Promise<void> => {
-  if (processing) {
-    throw new Error("yt-dlp already processing");
-  }
-  const now = formatDate(new Date());
-  console.log(`${now} download to: ${dlDirectory}`);
-  const cacheDir = getEnv("YT_CACHE");
-  const tmpDir = getEnv("YT_TMP");
-  const downloadArchiveTxt = getEnv("YT_DOWNLOADED_TXT");
-  const videoDir = getEnv("VIDEO_FOLDER");
-  try {
-    processing = true;
-    await runCommand("yt-dlp", [
-      "-k",
-      "--skip-download",
-      "--extract-audio",
-      "--restrict-filenames",
-      "--audio-format",
-      "mp3",
-      "--audio-quality",
-      "0",
-      "--cache-dir",
-      cacheDir,
-      "--download-archive",
-      downloadArchiveTxt,
-      "--output",
-      path.join(tmpDir, "%(title)s-%(id)s.%(ext)s"),
-      "-i",
-      listId,
-    ]);
+  const now = (): string =>
+    new Date().toISOString().replace("T", " ").substring(0, 19);
 
-    // move audio files to dlDirectory
-    await runCommand("find", [
-      tmpDir,
-      "-type",
-      "f",
-      "(",
-      "-iname",
-      "*.mp3",
-      "-o",
-      "-iname",
-      "*.wma",
-      ")",
-      "-exec",
-      "mv",
-      "-t",
-      dlDirectory,
-      "{}",
-      "+",
-    ]);
+  console.log(`${now()} download to: ${dlDirectory}`);
 
-    // move remaining to VIDEO_FOLDER
-    await runCommand("find", [
-      tmpDir,
-      "-type",
-      "f",
-      "-exec",
-      "mv",
-      "-t",
-      videoDir,
-      "{}",
-      "+",
-    ]);
-  } finally {
-    processing = false;
-  }
+  await runCommand("yt-dlp", [
+    "-k",
+    "--extract-audio",
+    "--restrict-filenames",
+    "--audio-format",
+    "mp3",
+    "--audio-quality",
+    "0",
+    "--cache-dir",
+    "/home/public/app_data/yt-download/.cache",
+    "--download-archive",
+    "/home/public/app_data/yt-download/.cache/download.txt",
+    "--output",
+    `${dlDirectory}/%(title)s-%(id)s.%(ext)s`,
+    "-i",
+    listId,
+  ]);
+
+  await runCommand("find", [
+    dlDirectory,
+    "-type",
+    "f",
+    "-not",
+    "(",
+    "-iname",
+    "*.mp3",
+    "-o",
+    "-iname",
+    "*.wma",
+    ")",
+    "-exec",
+    "mv",
+    "-t",
+    "/home/public/videos/youtube/",
+    "{}",
+    "+",
+  ]);
 };
