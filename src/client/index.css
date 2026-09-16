@@ -16,16 +16,59 @@ body {
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #121212;
   color: #eee;
+  overscroll-behavior: none;
 }
 
 .clickable {
   color: #87cefa;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .clickable:hover {
   text-decoration: underline;
   text-underline-offset: 4px; /* adjust for desired gap */
   text-decoration-thickness: 1px;
+}
+
+button {
+  font: inherit;
+  color: #eee;
+  background: #2a2a2a;
+  border: 1px solid #3d3d3d;
+  border-radius: 6px;
+  padding: 0.35rem 0.9rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button:active {
+  background: #3a3a3a;
+}
+
+/* hide scrollbar of horizontally scrollable breadcrumbs */
+.crumbs {
+  scrollbar-width: none;
+}
+.crumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-input {
+  font: inherit;
+  color: #eee;
+  background: #1e1e1e;
+  border: 1px solid #3d3d3d;
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.filter-input::placeholder {
+  color: #888;
+}
+.filter-input:focus {
+  outline: none;
+  border-color: #87cefa;
 }
 
 /* tabulator overrides - start */
@@ -41,5 +84,16 @@ body {
 .tabulator-row.tabulator-row-odd.highlighted-row,
 .tabulator-row.tabulator-row-even.highlighted-row {
   background-color: #000;
+}
+
+/* comfortable touch targets on small screens */
+@media (max-width: 640px) {
+  button {
+    padding: 0.55rem 1.1rem;
+  }
+  .tabulator .tabulator-cell {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
 }
 /* tabulator overrides - end */

@@ -13,13 +13,14 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 import { router } from "./routes";
 import type { Track } from "../../common/interface";
+import { TextInput } from "./components";
 
 const getTrackHref = (t?: Track) => (t ? `/stream${t.path}${t.title}` : "");
 
 const PathLink = (title: string, path: string) =>
   h("span")
     .attr("class", "clickable")
-    .css("padding", "0.1rem")
+    .css("padding", "0.25rem")
     .on("click", () => {
       router.navigate(path);
     })
@@ -54,6 +55,7 @@ export const PlayPage = (subDir: Signal<string>) =>
         highlightRow(table, index);
       });
       const totalFiles = signal<number>(0);
+      const filterText = signal<string>("");
       const getCurrentTrack = () => {
         const index = current.get();
         if (table == null || index == null) return;
@@ -62,9 +64,9 @@ export const PlayPage = (subDir: Signal<string>) =>
       };
 
       const next = () => {
+        const count = table?.getRows().length || totalFiles.get();
         const index = current.get() ?? 0;
-        const nextIndex = (index + 1) % totalFiles.get();
-        current.set(nextIndex);
+        current.set((index + 1) % count);
       };
 
       const shuffle = () => {
@@ -87,12 +89,21 @@ export const PlayPage = (subDir: Signal<string>) =>
 
       const header = div()
         .css("padding", "0.5rem")
+        .css("padding-right", "calc(0.5rem + env(safe-area-inset-right))")
+        .css("padding-left", "calc(0.5rem + env(safe-area-inset-left))")
         .css("display", "flex")
         .css("gap", "0.5rem")
         .css("align-items", "center")
+        .css("flex-wrap", "wrap")
         .inner(
           PathLink("music", "/"),
-          () => BreadCrumbs(subDir.get()),
+          div()
+            .attr("class", "crumbs")
+            .css("flex", "1 1 10rem")
+            .css("min-width", "0")
+            .css("overflow-x", "auto")
+            .css("white-space", "nowrap")
+            .inner(() => BreadCrumbs(subDir.get())),
           fragment().inner(() => `(${totalFiles.get()})`),
           button().on("click", shuffle).inner("shuffle"),
           button().on("click", next).inner("next"),
@@ -100,8 +111,14 @@ export const PlayPage = (subDir: Signal<string>) =>
 
       const footer = vbox()
         .css("padding", "0.5rem")
+        .css("padding-bottom", "calc(0.5rem + env(safe-area-inset-bottom))")
+        .css("gap", "0.25rem")
         .inner(
-          div().inner(() => getCurrentTrack()?.title),
+          div()
+            .css("overflow", "hidden")
+            .css("white-space", "nowrap")
+            .css("text-overflow", "ellipsis")
+            .inner(() => getCurrentTrack()?.title),
           h("audio")
             .css("width", "100%")
             .css("height", "3rem")
@@ -111,11 +128,22 @@ export const PlayPage = (subDir: Signal<string>) =>
             .on("ended", next),
         );
 
+      const filterBar = div()
+        .css("padding", "0 0.5rem 0.5rem")
+        .inner(
+          TextInput(filterText)
+            .attr("class", "filter-input")
+            .attr("type", "search")
+            .attr("placeholder", "filter tracks…")
+            .css("width", "100%"),
+        );
+
       const trackList = vbox()
         .css("height", "100%")
         .do(async (node) => {
           table = new Tabulator(node.el, {
             layout: "fitColumns",
+            height: "100%",
             selectableRows: false,
             columns: [
               {
@@ -153,6 +181,24 @@ export const PlayPage = (subDir: Signal<string>) =>
               },
             ],
           });
+          // drop the Path column on narrow screens so titles get full width
+          const narrow = window.matchMedia("(max-width: 640px)");
+          const applyColumns = () => {
+            if (table == null) return;
+            if (narrow.matches) table.hideColumn("path");
+            else table.showColumn("path");
+          };
+          narrow.addEventListener("change", applyColumns);
+          applyColumns();
+          const applyFilter = () => {
+            const q = filterText.get().trim().toLowerCase();
+            if (q === "") table?.clearFilter(false);
+            else
+              table?.setFilter((data: Track) =>
+                data.title.toLowerCase().replace(/_/g, " ").includes(q),
+              );
+          };
+          node.watch(filterText, applyFilter);
           node.watch(subDir, async () => {
             const files = await fetchJson("list", subDir.get());
             table?.setData(files);
@@ -160,5 +206,5 @@ export const PlayPage = (subDir: Signal<string>) =>
           });
         });
 
-      node.inner(header, trackList, footer);
+      node.inner(header, filterBar, trackList, footer);
     });
