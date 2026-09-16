@@ -144,6 +144,7 @@ export const PlayPage = (subDir: Signal<string>) =>
           table = new Tabulator(node.el, {
             layout: "fitColumns",
             height: "100%",
+            rowHeight: 44,
             selectableRows: false,
             columns: [
               {
@@ -158,7 +159,7 @@ export const PlayPage = (subDir: Signal<string>) =>
                 field: "title",
                 formatter: (cell) => {
                   cell.getElement().classList.add("clickable");
-                  return cell.getValue().replaceAll("_", " ");
+                  return String(cell.getValue()).replace(/_/g, " ");
                 },
                 cellClick: (ev, cell) => {
                   const index = cell.getRow().getPosition() as number;
