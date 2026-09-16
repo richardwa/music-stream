@@ -82,6 +82,12 @@ button:active {
 .tabulator .tabulator-row {
   border-bottom: 1px solid #777;
 }
+/* vertAlign:middle centers within the cell; stretch cells to fill the row */
+.tabulator .tabulator-row .tabulator-cell {
+  height: 100%;
+  padding-left: 14px;
+  padding-right: 14px;
+}
 
 .tabulator-row.tabulator-row-even {
   background-color: #444;

@@ -152,11 +152,13 @@ export const PlayPage = (subDir: Signal<string>) =>
                 formatter: "rownum",
                 width: 50,
                 hozAlign: "right",
+                vertAlign: "middle",
               },
               {
                 title: "Title",
                 widthGrow: 2,
                 field: "title",
+                vertAlign: "middle",
                 formatter: (cell) => {
                   cell.getElement().classList.add("clickable");
                   return String(cell.getValue()).replace(/_/g, " ");
@@ -169,6 +171,7 @@ export const PlayPage = (subDir: Signal<string>) =>
               {
                 title: "Path",
                 field: "path",
+                vertAlign: "middle",
                 formatter: (cell) => {
                   const data = cell.getData() as Track;
                   const paths = data.path.split("/").filter(Boolean);
