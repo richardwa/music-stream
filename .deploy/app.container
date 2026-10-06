@@ -7,7 +7,7 @@ ContainerName=app
 Environment=TZ=America/New_York
 PublishPort=0.0.0.0:7486:5177
 
-Volume=/mnt/public/music/:/music
+Volume=/mnt/public/music/:/music:ro
 Environment=MUSIC_FOLDER=/music
 
 [Service]
