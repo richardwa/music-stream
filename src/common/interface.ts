@@ -4,15 +4,8 @@ export type Track = {
   title: string;
   path: string;
 };
-export type AuthUser = {
-  sub: string;
-  name?: string;
-  email?: string;
-};
 export type ServerApi = {
   list: (subDir?: string) => Promise<Track[]>;
-  me: () => Promise<AuthUser | null>;
-  authEnabled: () => Promise<boolean>;
 };
 
 export const fetchJson = <T extends keyof ServerApi>(

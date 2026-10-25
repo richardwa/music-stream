@@ -2,14 +2,12 @@ import path from "path";
 import { defineConfig, ViteDevServer } from "vite";
 import express from "express";
 import { configureRoutes } from "./src/server/routes";
-import { configureAuthRoutes } from "./src/server/auth";
 
 const expressPlugin = () => ({
   name: "vite-plugin-express",
   configureServer(server: ViteDevServer) {
     const app = express();
     configureRoutes(app);
-    void configureAuthRoutes(app);
     server.middlewares.use(app);
   },
 });
