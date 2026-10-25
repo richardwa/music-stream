@@ -23,6 +23,7 @@
     "vite": "^7.2.2"
   },
   "dependencies": {
+    "openid-client": "^6.8.8",
     "serve-index": "^1.9.2",
     "solid-vanilla": "github:richardwa/solid-vanilla",
     "tabulator-tables": "^6.4.0",
