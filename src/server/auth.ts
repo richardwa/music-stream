@@ -5,11 +5,8 @@
  * configured the server runs without any login. When they are set, users can
  * log in via the issuer at OIDC_ISSUER (default https://auth.mangosplit.com).
  * Set OIDC_REQUIRE_LOGIN=true to make the API and /stream require a session.
- * A plain-http issuer (e.g. http://host:9091 for testing against an internal
- * Authelia) is allowed via openid-client's allowInsecureRequests.
  */
 import {
-  allowInsecureRequests,
   authorizationCodeGrant,
   buildAuthorizationUrl,
   ClientSecretPost,
@@ -52,18 +49,11 @@ let clientPromise: Promise<unknown> | null = null;
 const getClient = async () => {
   const config = authConfig()!;
   if (clientPromise == null) {
-    const issuerUrl = new URL(config.issuer);
-    const options =
-      issuerUrl.protocol === "http:"
-        ? // Plain http is only meant for local testing against an internal IdP.
-          { execute: [allowInsecureRequests] }
-        : undefined;
     clientPromise = discovery(
-      issuerUrl,
+      new URL(config.issuer),
       config.clientId,
       config.clientSecret,
-      ClientSecretPost(config.clientSecret),
-      options,
+      ClientSecretPost(),
     );
   }
   return clientPromise as ReturnType<typeof discovery>;
