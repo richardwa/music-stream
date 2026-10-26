@@ -107,6 +107,12 @@ export const PlayPage = (subDir: Signal<string>) =>
           fragment().inner(() => `(${totalFiles.get()})`),
           button().on("click", shuffle).inner("shuffle"),
           button().on("click", next).inner("next"),
+          button()
+            .on("click", async () => {
+              await fetchJson("logout");
+              router.navigate("/login");
+            })
+            .inner("logout"),
         );
 
       const footer = vbox()

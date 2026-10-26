@@ -1,8 +1,8 @@
 import { h, Signal } from "solid-vanilla";
 
-export const TextInput = (val: Signal<string>) =>
+export const TextInput = (val: Signal<string>, type = "text") =>
   h("input")
-    .attr("type", "text")
+    .attr("type", type)
     .on("input", (e) => val.set(e.target.value))
     .attr("value", val);
 
