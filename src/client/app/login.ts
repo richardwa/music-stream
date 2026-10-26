@@ -1,5 +1,5 @@
 import { button, div, signal, vbox } from "solid-vanilla";
-import { fetchJson, storeAuth } from "../../common/interface";
+import { postLogin, storeAuth } from "../../common/interface";
 import { TextInput } from "./components";
 import { router } from "./routes";
 
@@ -10,16 +10,16 @@ export const LoginPage = () => {
 
   const submit = async () => {
     try {
-      const result = await fetchJson("login", user.get(), password.get());
+      const result = await postLogin(user.get(), password.get());
       if (result.ok) {
         storeAuth(user.get(), password.get());
         router.navigate("/");
         return;
       }
+      error.set(result.error ?? "Wrong username or password");
     } catch {
-      // fall through to error message
+      error.set("Wrong username or password");
     }
-    error.set("Wrong username or password");
   };
 
   return div()

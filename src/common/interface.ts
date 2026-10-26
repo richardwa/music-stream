@@ -6,11 +6,9 @@ export type Track = {
 };
 export type LoginResult = {
   ok: boolean;
-  user?: string;
+  error?: string;
 };
 export type ServerApi = {
-  login: (user: string, password: string) => Promise<LoginResult>;
-  logout: () => Promise<boolean>;
   list: (subDir?: string) => Promise<Track[]>;
 };
 
@@ -21,15 +19,35 @@ export const storeAuth = (user: string, password: string) =>
   sessionStorage.setItem(authKey, btoa(`${user}:${password}`));
 export const clearAuth = () => sessionStorage.removeItem(authKey);
 
+const authHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {};
+  const basic = sessionStorage.getItem(authKey);
+  if (basic) headers["Authorization"] = `Basic ${basic}`;
+  return headers;
+};
+
+/** POST /api/login — owned by the solid-vanilla-server middleware. */
+export const postLogin = (
+  user: string,
+  password: string,
+): Promise<LoginResult> =>
+  fetch(`${apiPath}/login`, {
+    method: "post",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify([user, password]),
+  }).then((res) => {
+    if (!res.ok) throw new Error(`login failed: ${res.status}`);
+    return res.json() as Promise<LoginResult>;
+  });
+
 export const fetchJson = <T extends keyof ServerApi>(
   key: T,
   ...params: Parameters<ServerApi[T]>
 ) => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    ...authHeaders(),
   };
-  const basic = sessionStorage.getItem(authKey);
-  if (basic) headers["Authorization"] = `Basic ${basic}`;
   return fetch(`${apiPath}/${key}`, {
     method: "post",
     headers,

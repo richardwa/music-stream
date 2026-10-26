@@ -1,24 +1,14 @@
 import express from "express";
-import { apiPath, type ServerApi } from "../common/interface";
+import { type ServerApi } from "../common/interface";
 import { musicFolder } from "./conf";
-import {
-  authEnabled,
-  authCheckCredentials,
-  solidVanillaApiConfig,
-} from "./auth";
-import { configureApi, parseBasicHeader } from "solid-vanilla-server";
-import type { NextFunction, Request, Response } from "express";
-
-const folder = () => musicFolder();
+import { apiConfig, streamAuth } from "./auth";
+import { configureApi } from "solid-vanilla-server";
 import { readdir } from "fs/promises";
 import path from "path";
 
+const folder = () => musicFolder();
+
 const serverImpl: ServerApi = {
-  login: async (user: string, password: string) => {
-    const ok = authCheckCredentials(user, password);
-    return ok ? { ok: true, user: user } : { ok: false };
-  },
-  logout: async () => true,
   list: async (subDir: string = "") => {
     const files = await readdir(
       path.join(folder(), decodeURIComponent(subDir)),
@@ -39,23 +29,9 @@ const serverImpl: ServerApi = {
   },
 };
 
-/** solid-vanilla Basic auth, extended with a challenge for native prompts. */
-const streamAuth = (req: Request, res: Response, next: NextFunction) => {
-  if (!authEnabled()) return next();
-  const credentials = parseBasicHeader(req.headers.authorization);
-  if (
-    credentials &&
-    authCheckCredentials(credentials.login, credentials.password)
-  ) {
-    return next();
-  }
-  res.status(401).set("WWW-Authenticate", 'Basic realm="music-stream"');
-  res.json({ error: "not authenticated" });
-};
-
 export const configureRoutes = (app: ReturnType<typeof express>) => {
   // solid-vanilla middleware: logger + /api/login + Basic auth + API dispatch
-  configureApi(app, solidVanillaApiConfig(serverImpl));
+  configureApi(app, apiConfig(serverImpl));
   // audio streams use the same Basic auth (with challenge so browsers prompt)
   app.use("/stream", streamAuth, express.static(folder()));
 };
