@@ -1,7 +1,7 @@
 {
   "name": "music-streamer",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,14 @@
     "build": "tsc && vite build",
     "prestart": "npm run build",
     "start": "tsx src/server/server.ts"
+  },
+  "dependencies": {
+    "serve-index": "^1.9.2",
+    "solid-vanilla": "https://github.com/richardwa/solid-vanilla/releases/download/build-6e9f62/solid-vanilla-0.1.0.tgz",
+    "solid-vanilla-server": "https://github.com/richardwa/solid-vanilla/releases/download/build-6e9f62/solid-vanilla-server-0.1.0.tgz",
+    "solid-vanilla-ui": "https://github.com/richardwa/solid-vanilla/releases/download/build-6e9f62/solid-vanilla-ui-0.1.0.tgz",
+    "tabulator-tables": "^6.4.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/express": "types/express",
@@ -21,11 +29,5 @@
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.2"
-  },
-  "dependencies": {
-    "serve-index": "^1.9.2",
-    "solid-vanilla": "github:richardwa/solid-vanilla",
-    "tabulator-tables": "^6.4.0",
-    "ts-node": "^10.9.2"
   }
 }
