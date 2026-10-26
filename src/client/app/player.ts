@@ -8,7 +8,7 @@ import {
   fragment,
   Signal,
 } from "solid-vanilla";
-import { fetchJson } from "../../common/interface";
+import { clearAuth, fetchJson } from "../../common/interface";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 import { router } from "./routes";
@@ -108,8 +108,8 @@ export const PlayPage = (subDir: Signal<string>) =>
           button().on("click", shuffle).inner("shuffle"),
           button().on("click", next).inner("next"),
           button()
-            .on("click", async () => {
-              await fetchJson("logout");
+            .on("click", () => {
+              clearAuth();
               router.navigate("/login");
             })
             .inner("logout"),

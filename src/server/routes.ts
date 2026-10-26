@@ -1,14 +1,23 @@
 import express from "express";
 import { apiPath, type ServerApi } from "../common/interface";
 import { musicFolder } from "./conf";
-import { clearAuthCookie, createAuthCookie, login, requireAuth } from "./auth";
+import {
+  authEnabled,
+  authCheckCredentials,
+  solidVanillaApiConfig,
+} from "./auth";
+import { configureApi, parseBasicHeader } from "solid-vanilla-server";
+import type { NextFunction, Request, Response } from "express";
 
 const folder = () => musicFolder();
 import { readdir } from "fs/promises";
 import path from "path";
 
 const serverImpl: ServerApi = {
-  login: async (user: string, password: string) => login(user, password),
+  login: async (user: string, password: string) => {
+    const ok = authCheckCredentials(user, password);
+    return ok ? { ok: true, user: user } : { ok: false };
+  },
   logout: async () => true,
   list: async (subDir: string = "") => {
     const files = await readdir(
@@ -30,31 +39,23 @@ const serverImpl: ServerApi = {
   },
 };
 
+/** solid-vanilla Basic auth, extended with a challenge for native prompts. */
+const streamAuth = (req: Request, res: Response, next: NextFunction) => {
+  if (!authEnabled()) return next();
+  const credentials = parseBasicHeader(req.headers.authorization);
+  if (
+    credentials &&
+    authCheckCredentials(credentials.login, credentials.password)
+  ) {
+    return next();
+  }
+  res.status(401).set("WWW-Authenticate", 'Basic realm="music-stream"');
+  res.json({ error: "not authenticated" });
+};
+
 export const configureRoutes = (app: ReturnType<typeof express>) => {
-  // @ts-ignore
-  app.use(express.json());
-  const routes = express.Router();
-  Object.entries(serverImpl).forEach(([key, fn]) => {
-    if (key === "login" || key === "logout") return; // handled below
-    routes.post(`/${key}`, async (req: any, res: express.Response) => {
-      const params: unknown[] = req?.body ?? [];
-      // @ts-ignore
-      const result = await fn(...params);
-      res.json(result);
-    });
-  });
-  // login/logout are unauthenticated endpoints that manage the session cookie
-  routes.post("/login", async (req: any, res: express.Response) => {
-    const [user, password] = (req?.body ?? []) as [string, string];
-    const result = await serverImpl.login(user, password);
-    if (result.ok) createAuthCookie(res, result.user!);
-    res.json(result);
-  });
-  routes.post("/logout", (_req: any, res: express.Response) => {
-    clearAuthCookie(res);
-    res.json(true);
-  });
-  // all other API endpoints require a valid session
-  app.use(apiPath, requireAuth, routes);
-  app.use("/stream", requireAuth, express.static(folder()));
+  // solid-vanilla middleware: logger + /api/login + Basic auth + API dispatch
+  configureApi(app, solidVanillaApiConfig(serverImpl));
+  // audio streams use the same Basic auth (with challenge so browsers prompt)
+  app.use("/stream", streamAuth, express.static(folder()));
 };

@@ -1,88 +1,45 @@
 import crypto from "crypto";
-import type { NextFunction, Request, Response } from "express";
+import type { ServerApi } from "../common/interface";
 
 /**
- * Simple cookie-based login.
- *
  * Enabled when LOGIN_PASSWORD is set (LOGIN_USER defaults to "admin").
  * Without LOGIN_PASSWORD the app is open, as before.
  */
-export const authUser = () => process.env.LOGIN_USER ?? "admin";
-
 export const authEnabled = () => process.env.LOGIN_PASSWORD != null;
 
-const sign = (value: string) =>
-  crypto
-    .createHmac("sha256", process.env.LOGIN_PASSWORD ?? "")
-    .update(value)
-    .digest("hex");
+/**
+ * Auth built on solid-vanilla-server middleware:
+ * - `configureApi` wires up logging, POST /api/login and Basic auth for the API
+ * - `checkCredentials` is backed by the LOGIN_PASSWORD env var
+ *   (LOGIN_USER defaults to "admin"). Without LOGIN_PASSWORD the app is open.
+ */
 
-const tokenFor = (user: string) =>
-  `${Buffer.from(user).toString("base64url")}.${sign(user)}`;
+export const authUser = () => process.env.LOGIN_USER ?? "admin";
 
-const verifyToken = (token: string | undefined): string | null => {
-  if (!token) return null;
-  const [b64, mac] = token.split(".");
-  if (!b64 || !mac) return null;
-  const user = Buffer.from(b64, "base64url").toString();
-  const expected = sign(user);
-  if (
-    mac.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(expected))
-  ) {
-    return user;
-  }
-  return null;
-};
-
-const checkCredentials = (user: string, password: string) => {
+/** solid-vanilla checkCredentials implementation backed by LOGIN_PASSWORD. */
+export const authCheckCredentials = (login: string, password: string) => {
   const expected = process.env.LOGIN_PASSWORD ?? "";
+  if (!authEnabled()) return true; // open mode: any login accepted
   return (
-    user === authUser() &&
+    login === authUser() &&
     password.length === expected.length &&
     password.length > 0 &&
     crypto.timingSafeEqual(Buffer.from(password), Buffer.from(expected))
   );
 };
 
-export const createAuthCookie = (res: Response, user: string) => {
-  res.cookie("auth", tokenFor(user), {
-    httpOnly: true,
-    // @ts-ignore sameSite is missing from the CookieOptions type
-    sameSite: "strict",
-  });
+const apiImpl = (
+  impl: ServerApi,
+): Record<string, (...args: never[]) => Promise<unknown>> => {
+  const { login: _login, logout: _logout, ...rest } = impl;
+  return rest;
 };
 
-export const clearAuthCookie = (res: Response) => res.clearCookie("auth");
-
-const cookieUser = (req: Request): string | null => {
-  const header = req.headers.cookie;
-  if (!header) return null;
-  const token = header
-    .split(";")
-    .map((c) => c.trim())
-    .find((c) => c.startsWith("auth="))
-    ?.slice(5);
-  return verifyToken(token ? decodeURIComponent(token) : undefined);
-};
-
-/** Express middleware rejecting requests without a valid session cookie. */
-export const requireAuth = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  if (!authEnabled()) return next();
-  // login/logout manage the session itself and must stay reachable
-  if (req.path === "/login" || req.path === "/logout") return next();
-  if (cookieUser(req) != null) return next();
-  res.status(401).json({ error: "unauthorized" });
-};
-
-/** ServerApi login implementation. */
-export const login = (user: string, password: string) => {
-  if (!authEnabled() || checkCredentials(user, password)) {
-    return { ok: true, user: authUser() };
-  }
-  return { ok: false };
-};
+/** Configure solid-vanilla's API middleware for the given ServerApi impl. */
+export const solidVanillaApiConfig = (impl: ServerApi) => ({
+  serverImpl: apiImpl(impl),
+  checkCredentials: async (login: string, password: string) =>
+    authCheckCredentials(login, password),
+  // when auth is disabled, serve everything anonymously
+  anonymous: authEnabled() ? [] : Object.keys(apiImpl(impl)),
+});

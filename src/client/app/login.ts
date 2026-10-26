@@ -1,5 +1,5 @@
 import { button, div, signal, vbox } from "solid-vanilla";
-import { fetchJson } from "../../common/interface";
+import { fetchJson, storeAuth } from "../../common/interface";
 import { TextInput } from "./components";
 import { router } from "./routes";
 
@@ -12,6 +12,7 @@ export const LoginPage = () => {
     try {
       const result = await fetchJson("login", user.get(), password.get());
       if (result.ok) {
+        storeAuth(user.get(), password.get());
         router.navigate("/");
         return;
       }

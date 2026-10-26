@@ -14,13 +14,25 @@ export type ServerApi = {
   list: (subDir?: string) => Promise<Track[]>;
 };
 
+const authKey = "auth.basic";
+
+/** Remember login credentials for Basic auth (kept for the session only). */
+export const storeAuth = (user: string, password: string) =>
+  sessionStorage.setItem(authKey, btoa(`${user}:${password}`));
+export const clearAuth = () => sessionStorage.removeItem(authKey);
+
 export const fetchJson = <T extends keyof ServerApi>(
   key: T,
   ...params: Parameters<ServerApi[T]>
-) =>
-  fetch(`${apiPath}/${key}`, {
+) => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const basic = sessionStorage.getItem(authKey);
+  if (basic) headers["Authorization"] = `Basic ${basic}`;
+  return fetch(`${apiPath}/${key}`, {
     method: "post",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(params),
   }).then((res) => {
     if (res.status === 401) {
@@ -31,3 +43,4 @@ export const fetchJson = <T extends keyof ServerApi>(
     if (!res.ok) throw new Error(`${key} failed: ${res.status}`);
     return res.json();
   }) as ReturnType<ServerApi[T]>;
+};
